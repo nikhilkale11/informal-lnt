@@ -1,0 +1,192 @@
+// co-iar-common.lnt
+// Compiler Options for IAR ANSI C/C++ Compilers shipped with Embedded
+// Workbench
+//
+// This file contains options to allow PC-lint to process source
+// files for your compiler.  It should not be referenced directly; instead
+// it should be referenced by another .lnt file containing options
+// specific to a individual IAR compiler. For example, when using the IAR
+// compiler for MSP430, use co-iar-ew6-MSP430.lnt, which references this
+// file; when using the IAR compiler for ARM, use co-iar-ew6-ARM.lnt,
+// which references this file.
+
+
+/***********       Begin Preprocessing Options         ***********/
+//
+// Common preprocessing options:
+
++fdi // Search the directory of the including file
++compiler(search_actively_including_stack) // Search directories of all
+    // files in the current stack of nested #include's
+
++libh(predefined_macros_for_PC-lint.h)
+-header(predefined_macros_for_PC-lint.h) // IMPORTANT: This  header file
+    // needs to be generated before you try to use Lint.
+    // 
+    // Explanation: The IAR compiler defines many macros for which there
+    // are, by default, no #define directives. Lint must be made aware of
+    // these macros in order to parse system headers correctly (which is
+    // necessary in order to process project code correctly).
+    // 
+    // To generate the header: in the IAR Embedded Workbench IDE, select:
+    // 
+    //      Project -> Options... 
+    // 
+    // Under "Category:", select "C/C++ Compiler". 
+    // 
+    // In the "Extra Options" tab (at the end of the list of tabs), check
+    // the box marked "Use command line options".
+    // 
+    /* In the command line options, insert the line:
+  
+--predef_macros predefined_macros_for_PC-lint.h
+ 
+    * ... and click "OK" and then build the project. 
+    */
+    
+    // The project directory should then contain the header file
+    // predefined_macros_for_PC-lint.h (which contains the macro
+    // definitions enabled for your project's current build configuration).
+    //
+    // Note, the build configuration can change the contents of this
+    // header, so there should be one for each project configuration. You
+    // may therefore chose to place it in a project subdirectory that is
+    // specific to a single configuration, and reference that directory in
+    // a -i option.
+
+// Regardless of which compiler you use, the system #include search path
+// should be supplied in:
+
+    include-path.lnt // IMPORTANT: this file should be created if it does not already exist.
+
+// How to find the right sequence of -i options: 
+//
+// Suppose your project directory is C:\X and suppose it contains a source
+// file foo.c. Then after a build, there should be a file whose absolute
+// path is:
+//
+//   C:\X\Debug\Obj\foo.pbi.cout
+//
+// If we open this file in a text editor, we'll see the search path: it's
+// a sequence of directories where each directory pathname is preceded by
+// "-I"; for example, for the compilation of a file "t.c", the IAR/ARM
+// build system creates a file Debug\Obj\t.pbi.cout containing: 
+//
+//      -I
+//      C:\IAR\EW6\arm\inc
+//      -I
+//      C:\IAR\EW6\arm\inc\c
+// 
+// Based on this, we create the Lint options:
+//
+//      -i"C:\IAR\EW6\arm\inc"
+//      -i"C:\IAR\EW6\arm\inc\c"
+//
+// ... in include-path.lnt. (Note, include-path.lnt should be placed in
+// the project directory. As with the predefined macro header, you should
+// have one of these per project.)
+
+/***********       End Preprocessing Options         ***********/
+
+/***********       Begin Common Extended Keyword Options    ***********/
+
++fem // Allow a modifier (like __interrupt) to appear before a
+     // type-specifier; e.g.: __interrupt void f(void);
+
+// PC-lint will recognize special meanings for the following keywords
+// (which are undocumented):
++rw(__is_union,
+    __is_polymorphic,
+    __is_pod,
+    __is_enum,
+    __is_empty,
+    __is_convertible_to,
+    __is_class,
+    __is_base_of,
+    __is_abstract,
+    __has_virtual_destructor,
+    __has_user_destructor,
+    __has_trivial_destructor,
+    __has_trivial_copy,
+    __has_trivial_constructor,
+    __has_trivial_assign,
+    __has_nothrow_copy,
+    __has_nothrow_constructor,
+    __has_nothrow_assign,
+    __has_copy,
+    __has_assign,
+    __thread,
+    __null,
+    __typeof__,
+    __declspec,
+     _Pragma,
+    )
+
+// -rw_asgn( L, R ) means "activate L as a keyword with the known
+// semantics of R":
+-rw_asgn(__has_destructor,__has_user_destructor)
+-rw_asgn(__asm,asm)
+
+// Other keywords need to be implemented as preprocessor macros:
++d"__assignment_by_bitwise_copy_allowed(t)=(!__is_polymorphic(t) && !__has_assign(t))"
++d"__construction_by_bitwise_copy_allowed(t)=(!__is_polymorphic(t) && !__has_copy(t))"
+
+// Keyword/operator __memory_of:
+-d"__memory_of()="
+   // "Determines the class memory. A class memory determines which memory
+   // a class object can reside in. This symbol can only occur in class
+   // definitions as a class memory."
+
+-d"__is_standard_layout(t)=__is_pod(t)" // Not quite right.
+-d"__is_trivial(t)=__is_pod(t)"  // Not quite right.
+    // Actually, __is_pod(t) is equivalent to (__is_trivial(t) &&
+    // __is_standard_layout(t) && !__is_union(t)), but the first two
+    // traits do not have build-in support in version 9.00i.
+-d"__has_constructor(t)=!__is_pod(t)" 
+
++d"__constrange()=" // Determines the allowed range for a parameter to an
+                    // intrinsic function and that the parameter must be of
+                    // type const. (It might be nice for Lint to
+                    // auto-translate these into equivalent -sem() options.)
+//
+/***********       End Common Extended Keywords         ***********/
+
+/***********       Begin Pragma Emulation        ***********/
+//
++pragma( inline, macro )
+-d"pragma_inline()=inline" 
+
++pragma( pack, macro )
+-d"pragma_pack()=__packed"
+
++pragma( error, message ) 
++pragma( message, message ) 
++pragma( include_alias, include_alias ) 
+
+// Other pragmas will be ignored.
+//
+/***********       End Pragma Emulation          ***********/
+
++fan // Enable anonymous unions
++fas // Enable anonymous structs
+
+// Common suppressions:
+-wlib(1)    // sets the warning level within library headers to 1
+	    // (no warnings, just syntax errors).  Comment out if you
+	    // are actually linting library headers.  This
+	    // option makes obsolete options of the form -elib(axxx) where
+	    // xxx >= 400 which may be retained for historical reasons.
+-e46 // IAR documents that any integral or enumeration type may be used as
+      // the type of a bitfield.
+-e430 // @ location is common.
+
+//  The following functions exhibit variable return modes.
+//  That is, they may equally-usefully be called for a value
+//  as called just for their effects.  Accordingly we inhibit
+//  Warning 534 for these functions.
+//  Feel free to add to or subtract from this list.
+
+-esym(534,close,creat,fclose,fprintf,fputc)
+-esym(534,fputs,fscanf,fseek,fwrite,lseek,memcpy,memmove,memset)
+-esym(534,printf,puts,scanf,sprintf,sscanf,strcat,strcpy)
+-esym(534,strncat,strncpy,unlink,write)

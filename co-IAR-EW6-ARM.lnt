@@ -1,0 +1,31 @@
+// co-iar-ew6-arm.lnt
+// Compiler Options for IAR C/C++ Compiler V6.x for ARM
+//      (Shipped with IAR Embedded Workbench IDE v6.x for ARM)
+// This file contains options to allow PC-lint to process source
+// files for your compiler.  It is used as follows:
+//
+//      lint-nt  std.lnt  source-file(s)
+//
+// ... where std.lnt contains:
+//
+//      // Size options:
+//      /* [insert size options here] */
+//
+//      co-iar-ew6-arm.lnt
+
+// First, define preprocessing behavior and establish common reserved
+// words & pragmas:
+
+    co-IAR-EW6-common.lnt
+
+// Extended Keywords specific to the ARM compiler:
+//
+// Function type attributes affect how the function should be called:
+    +rw(__arm, __fiq, __interwork, __irq, __swi, __task, __thumb, __nounwind)
+// Data type attributes:
+    +rw(__big_endian, __little_endian, __packed )
+// Object attribute keywords:
+    +rw(__no_init, _root, __weak)
+// Object attributes that can be used for functions:
+    +rw( __intrinsic, __nested, __noreturn, __ramfunc )
+

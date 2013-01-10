@@ -1,0 +1,91 @@
+
+//    Compiler Options for the Microchip MPLAB XC8 C Compiler
+
+//    This file contains options to allow PC-lint to process source
+//    files for your compiler.  It is used as follows:
+//
+//    lint  co-Microchip-MPLAB-XC8.lnt  source-file(s)
+//
+
+/***********       Begin Preprocessing Options         ***********/
+//
+// Common preprocessing options:
+
++fdi // Search the directory of the including file
+
+// Regardless of which compiler you use, the system #include search path
+// and predefined macros should be supplied in:
+
+    preproc.lnt // IMPORTANT: this file should be created if it does not already exist.
+
+// How to generate preproc.lnt:
+//
+// (Note, it's common for each project to have its own unique sequence of
+// options that control the preprocessor; therefore you should have one
+// preproc.lnt per project.)
+//
+// In your project's build options, enable verbose messages from the
+// compiler; this will reveal arguments to the preprocessor when the
+// project is rebuilt. In the MPLAB Build output window, look for a line
+// beginning with "cpp" as in:
+//
+//     Executing: "C:\Microchip\xc8\v1.12\bin\xc8.exe" --pass1 [args...]
+//     cpp  -D__PICC__ -IC:\Microchip\xc8\v1.12\include [args ...]
+//
+// Each option given to cpp that begins with -I or -D should be copied
+// into the file preproc.lnt, and the order of -I options should be
+// preserved.
+//
+// For -I options, it's good to be in the habit of wrapping each directory
+// pathname in double-quotes even when that is not strictly necessary;
+// example:
+//
+//      -I"C:\Microchip\xc8\v1.12\include"
+
+/***********       End Preprocessing Options         ***********/
+
+-esym(534,close,creat,fclose,fprintf,fputc)
+-esym(534,fputs,fscanf,fseek,fwrite,lseek,memcpy,memmove,memset)
+-esym(534,printf,puts,scanf,sprintf,sscanf,strcat,strcpy)
+-esym(534,strncat,strncpy,unlink,write)
+-esym(515,fprintf,printf,sprintf,fscanf,scanf,sscanf)
+-esym(516,fprintf,printf,sprintf,fscanf,scanf,sscanf)
+
+          // while processing compiler (library) header files ...
+-wlib(1)  // sets the warning level within library headers to 1
+        // (no warnings, just syntax errors).  Comment out if you
+        // are actually linting library headers.  This
+        // option makes obsolete options of the form -elib(axxx) where
+        // xxx >= 400 which may be retained for historical reasons.
+
++fem  
++fan // allow anonymous unions.
++fas // allow anonymous structs.
+
+-e109 // short long types are valid
+-e146 // we support binary constants
+-e617 
+//-e534 // uncomment if "ignoring return value" warning is undesired.
+-elib(125)  // static keywords in prototype arguments
+
+-e430  // Immediately after the end of a /declarator/, the token @
+       // followed by a /constant-expression/ specifies the address of the
+       // declared entity.
+
+// To ignore inline assembly:
+-d_asm=_to_semi
+-d_endasm=;
++rw(_to_semi)
++ppw(asm)
++ppw(endasm)
+
+// Keywords:
+
+-rw_asgn(__bit,_bit)
+-rw_asgn(__attribute__,__gcc_attribute__)
++rw(near,__near,far,__far)
+
+/* 
++rw(code)
++fdr        // deduce return type of a function.
+*/

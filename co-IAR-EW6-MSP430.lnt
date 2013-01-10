@@ -1,0 +1,124 @@
+// co-iar-msp430.lnt
+// Compiler Options for IAR ANSI C/C++ Compiler V6.x for ARM
+//      (Shipped with IAR Embedded Workbench IDE v6.x)
+// This file contains options to allow PC-lint to process source
+// files for your compiler.  It is used as follows:
+//
+//      lint-nt  std.lnt  source-file(s)
+//
+// ... where std.lnt contains:
+//
+//      // Size options:
+//      /* [insert size options here] */
+//
+//      co-iar-msp430.lnt
+
+// First, define preprocessing behavior and establish common reserved
+// words & pragmas:
+
+    co-IAR-EW6-common.lnt
+
+/***********  Begin MSP430-Specific Keyword Options    ***********/
+
+// Documented:
++rw( __cc_version1,
+     __cc_version2,
+     __interrupt,
+     __intrinsic,
+     __monitor,
+     __no_init,
+     __no_pic,
+     __noreturn,
+     __persistent
+     __ramfunc,
+     __raw,
+     __regvar,
+     __root
+     __ro_placement,
+     __save_reg20,
+     __task,
+     )
+
+-mS // Assume data pointers are __data16 by default. // FIXME: we would
+    // like to move this to a #if region in a lint support header.
+
+-rw_asgn(__data16, _near)
+-rw_asgn(__data20, _far)
+-rw_asgn(__regvar, pascal)
+-rw_asgn(__code, fortran)
+-rw_asgn(__ALIGNOF__,__alignof)
+
+// Other undocumented keywords:
++rw( __nounwind,
+
+   )
+
+
+// -rw_asgn( L, R ) means "activate L as a keyword with the known
+// semantics of R":
+-rw_asgn(__has_destructor,__has_user_destructor)
+-rw_asgn(__asm,asm)
+
+// Other keywords need to be implemented as preprocessor macros:
++d"__assignment_by_bitwise_copy_allowed(t)=(!__is_polymorphic(t) && !__has_assign(t))"
++d"__construction_by_bitwise_copy_allowed(t)=(!__is_polymorphic(t) && !__has_copy(t))"
+
+// Keyword/operator __memory_of:
+-d"__memory_of()="
+   // "Determines the class memory. A class memory determines which memory
+   // a class object can reside in. This symbol can only occur in class
+   // definitions as a class memory."
+
+-d"__is_standard_layout(t)=__is_pod(t)" // Not quite right.
+-d"__is_trivial(t)=__is_pod(t)"  // Not quite right.
+    // Actually, __is_pod(t) is equivalent to (__is_trivial(t) &&
+    // __is_standard_layout(t) && !__is_union(t)), but the first two
+    // traits do not have build-in support in version 9.00i.
+-d"__has_constructor(t)=!__is_pod(t)"
+
++d"__constrange()=" // Determines the allowed range for a parameter to an
+                    // intrinsic function and that the parameter must be of
+                    // type const. (It might be nice for Lint to
+                    // auto-translate these into equivalent -sem() options.)
+//
+/***********       End Extended Keywords         ***********/
+
+/***********       Begin Pragma Emulation        ***********/
+//
++pragma( inline, macro )
+-d"pragma_inline()=inline"
+
++pragma( pack, macro )
+-d"pragma_pack()=__packed"
+
++pragma( error, message )
++pragma( message, message )
++pragma( include_alias, include_alias )
+
+// Other pragmas will be ignored.
+//
+/***********       End Pragma Emulation          ***********/
+
++fan // Enable anonymous unions
++fas // Enable anonymous structs
+
+// Common suppressions:
+-wlib(1)    // sets the warning level within library headers to 1
+	    // (no warnings, just syntax errors).  Comment out if you
+	    // are actually linting library headers.  This
+	    // option makes obsolete options of the form -elib(axxx) where
+	    // xxx >= 400 which may be retained for historical reasons.
+-e46 // IAR documents that any integral or enumeration type may be used as
+      // the type of a bitfield.
+-e430 // @ location is common.
+
+//  The following functions exhibit variable return modes.
+//  That is, they may equally-usefully be called for a value
+//  as called just for their effects.  Accordingly we inhibit
+//  Warning 534 for these functions.
+//  Feel free to add to or subtract from this list.
+
+-esym(534,close,creat,fclose,fprintf,fputc)
+-esym(534,fputs,fscanf,fseek,fwrite,lseek,memcpy,memmove,memset)
+-esym(534,printf,puts,scanf,sprintf,sscanf,strcat,strcpy)
+-esym(534,strncat,strncpy,unlink,write)

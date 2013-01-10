@@ -1,0 +1,7 @@
+This is an informal collection of configuration files for
+PC-lint/Flexelint. They have not necessarily met with the approval of
+Gimpel Software.
+
+Before attempting to use a .lnt file, please read its section on
+preprocessing options--specifically, the generation of -i options and
+pre-defined macros.
