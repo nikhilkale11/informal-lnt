@@ -1,0 +1,221 @@
+//    co-bcb-xe3.lnt
+//    Compiler Options for C++ Builder XE3
+
+-ctc
+
+//    This file contains options to allow PC-lint to process source
+//    files for your compiler.  It is used as follows:
+//
+//    lint  co-Embarcadero-C++Buider-XE3.lnt  source-file(s)
+//
+
+/***********       Begin Preprocessing Options         ***********/
+//
+// Common preprocessing options:
+
++linebuf
+
++fdi // Search the directory of the including file
+
++fdh // Meaning: When Lint sees:
+     //     #include "x"
+     //  ... it will behave as if it had seen:
+     //     #include "x.h"
+     //  If the resulting search fails, Lint searches for the name without
+     //  ".h".
+
++compiler(search_actively_including_stack) // Search directories of all
+    // files in the current stack of nested #include's
+
++libh(co-Embarcadero-C++Buider-XE3.h)
+-header(co-Embarcadero-C++Buider-XE3.h)
+
+// The #include search path should be supplied in:
+
+    include-path.lnt // IMPORTANT: this file should be created if it does not already exist.
+
+// It's common for the include search path to differ between
+// projects, so include-path.lnt should be placed in the project directory
+// (or a subdirectory thereof).
+//
+// How to find the right sequence of -i options:
+// In the C++ Builder IDE, after a build completes, the Messages/Build
+// window should contain expandable lines like:
+//
+//   [+] bcc32 command line for "foo.cpp"
+//
+// When you expand the item, it reveals the sequence of arguments to the
+// compiler; the sequence of directories to be passed to Lint is the
+// sequence of directories named by all -I options on that command line.
+
+/***********       End Preprocessing Options         ***********/
+
+// Core language parsing options:
+
+-A(C++2011) // There doesn't seem to be a way to specify an earlier
++fpc // pointer value retains l-value
++fbo // bool is an intrinsic type
++fwc // w_char is an intrinsic type
+//  Please note:
+//  The flag +fwc says that wchar_t is builtin for both C and C++ code.
+//  For Borland C++ this is true.  For Borland C this is untrue.  When the
+//  macro _WCHAR_T is defined (as we typically see in the predefined macro
+//  header), it prevents stdlib.h from attempting to define it while
+//  linting C code.  If this is the only thing you're using out of
+//  stdlib.h you may get a message saying stdlib.h isn't being used when
+//  it is.  In that case, use this Lint option: -efile(766,stdlib.h)
+
++rw(_export,_import)    // needed especially for Windows programming
+
+-rw_asgn(_asm,asm)   // Borland accepts both "_asm" and "asm"
+-rw_asgn(__asm,asm)  // and __asm
+
+// Embarcadero's other builtin keywords
++rw(__interrupt,__near,__far,__huge,__fortran,__pascal,__cdecl)
++rw(__import,__export,__loadds,__saveregs,__asm,__fastcall,__stdcall)
++rw(_stdcall,__classmethod)
++rw(__rtti)   // run-time type information
+-rw_asgn(__seg,_seg)
+
+
++ftr    // truncate header file names to 8x3 if necessary
+	// We now support __declspec directly, unfortunately only the
+	// Microsoft version and not the extended Borland version of
+	// multiple specifications separated by commas.  That will be
+	// out soon.
++rw(_to_brackets)           // ignore "_to_brackets" parenthetical_expression
+-d__declspec=_to_brackets   // ignore __declspec expressions
+-d_declspec=__declspec      // the single '_' version is occasionally used
+-rw_asgn(__published,public) // pretend attribute '__published' is 'public'
+-rw_asgn(__closure, fortran) // enable __closure as a kind of type
+                             // quolifier
+
+
++rw( *type_traits ) // Enable type traits support
+// Other Embarcadero type traits:
++rw(__is_void)
++rw(__is_integral)
++rw(__is_floating_point)
++rw(__is_array)
++rw(__is_pointer)
++rw(__is_member_object_pointer)
++rw(__is_member_function_pointer)
++rw(__is_function)
++rw(__is_reference)
++rw(__is_arithmetic)
++rw(__is_fundamental)
++rw(__is_object)
++rw(__is_scalar)
++rw(__is_compound)
++rw(__is_member_pointer)
++rw(__is_const)
++rw(__is_volatile)
++rw(__is_trivial)
++rw(__is_standard_layout)
++rw(__has_trivial_default_constructor)
++rw(__has_trivial_copy_constructor)
++rw(__has_nothrow_default_constructor)
++rw(__has_nothrow_copy_constructor)
++rw(__is_signed)
++rw(__is_unsigned)
++rw(__array_rank)
++rw(__array_extent)
++rw(__is_same)
++rw(__is_lvalue_reference)
++rw(__is_rvalue_reference)
+
+
+-sld10          // sizeof(long double) is 10.
+
+
+// Common suppressions:
+
+            // while processing compiler (library) header files ...
+-wlib(1)    // sets the warning level within library headers to 1
+	    // (no warnings, just syntax errors).  Comment out if you
+	    // are actually linting library headers.  This
+	    // option makes obsolete options of the form -elib(axxx) where
+	    // xxx >= 400 which may be retained for historical reasons.
+-elib(123)  // FD_SET is both a typedef and a macro.
+-elib(19) // For stray semicolons (which are harmless)
+
+-emacro(507,FP_OFF)  // inhibit loss of information message.
+--emacro(507,offsetof) // inhibit loss of info message in macro
+-emacro(413,offsetof)  // use of NULL pointer creates a stir
+-emacro(545,offsetof)  // addressing an array member is OK
+-emacro(792,assert)    // inhibit void cast of void message
+-emacro((???),va_arg)  // the va_arg() macro can yield 415, 416, 661, 662
+		       // 796 and 797 (out-of-bounds errors).
+-e793       // inhibit 'ANSI limit reached' --
+            // limits are impractically low with Borland headers
+            // identical struct's to a program.
+
+-function(exit,_exit)   // _exit() is like exit()
+-function(exit,__assertfail)  // __assertfail() is like exit()
+-emacro(570,disable,_disable,enable,_enable)  // allow (char) 0xFA
+-emacro(734,putc)   // don't complain about items being too large.
+-emacro(732,putc)      // inhibit loss of sign
+
+//  The following functions exhibit variable return modes.
+//  That is, they may equally-usefully be called for a value
+//  as called just for their effects.  Accordingly we inhibit
+//  Warning 534 for these functions.
+//  Feel free to add to or subtract from this list.
+
+-esym(534,*printf,*putc,*scanf)  // often called without checking return
+-esym(534,close,creat,fclose,fflush)
+-esym(534,fputs,fseek,fwrite,lseek,memcpy,memmove,memset)
+-esym(534,puts,strcat,strcpy)
+-esym(534,strncat,strncpy,unlink,write)
+-esym(534,__assertfail)
+
+//  These are the wide char variants of printf-scanf family
+
+-wprintf( 1, wprintf )
+-wprintf( 2, fwprintf, swprintf )
+-wscanf( 1, wscanf )
+-wscanf( 2, fwscanf, swscanf )
+
+-esym(1702,operator<<,operator>>)  // both member and ordinary function
+
+// These functions return things that are frequently ignored.
+
+-esym(534,*operator<<,*operator>>)
+
+
+// The following additional options seem to be needed.
++fna            // allow operator new[]
+
+-d__BORLANDC__=0x540    // predefined macro
+-d__TURBOC__=0x540      // predefined macro
+
+-elib(46)               // allow not int as base of bit field
+-esym(18,lock,unlock)   // "C" functions being overloaded?
+-esym(18,LPWSTR,LPCWSTR)// Both of these types are redeclared (typedef)
+-elib(1007)             // virtual definition within extern "C"
+-esym(1058,TDate)       // Borlands code trys to modify a non-const ref
+
+
+-e1023  // C++ Builder adopts the policy of first come first served
+        // so that if two function templates could both handle a
+        // situation the first should be taken.  Hence don't issue
+        // the ambiguity message
+-e1703  // Don't elaborate on this message either
+
+-estring(1059,unsigned char) // For implicit conversions from enum classes
+                             // to unsigned char (which appear to be deserved).
+
+-esym(40,_BLOB) /* This suppresses the "undeclared identifier" diagnostic
+    that we issue for:
+      #if sizeof(_BLOB) == 8
+    ... which appears in
+    windows/rtl/Winapi.Windows.hpp, which ships with version 10.0 of the
+    XE3 IDE for Windows.
+
+    (Note, ISO C++ does not permit sizeof() in a preprocessor directive,
+    so the semantics of this code are not defined for the case where the
+    operand to sizeof is not declared/defined. As it happens, bcc32.exe
+    silently accepts it (even when _BLOB is not defined during the
+    compilation) and evaluates false for the #if. Lint also evaluates
+    false for the #if but issues this error.)
+    */
