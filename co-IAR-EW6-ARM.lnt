@@ -25,7 +25,7 @@
 // Data type attributes:
     +rw(__big_endian, __little_endian, __packed )
 // Object attribute keywords:
-    +rw(__no_init, _root, __weak)
+    +rw(__absolute, __no_init, _root, __weak)
 // Object attributes that can be used for functions:
     +rw( __intrinsic, __nested, __noreturn, __ramfunc )
 
